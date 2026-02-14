@@ -47,7 +47,7 @@ export const profile = {
   tagline:
     "I build production-grade AI systems (RAG + agents) with reliability, security, and cost governance.",
   intro:
-    "I’m an AI engineer with 3 years across two teams: 2 years in a Data team working on customer data/CDP needs, and 1 year in an AI team shipping RAG, agent workflows, and company-wide n8n automation. I like work that’s measurable in production—clear acceptance criteria, observable behavior, and audit-friendly decisions.",
+    "I’m an AI engineer who ships practical AI systems—RAG, tool-using agents, and automation workflows—built for production realities. I focus on measurable outcomes: clear acceptance criteria, observable behavior, and audit-friendly decisions (reliability, security, and cost governance).", 
   email: "info@bennettlabs.dev",
   resumeUrl: "#",
   links: {
@@ -167,16 +167,16 @@ export const process: ProcessStep[] = [
 
 export const experience: Experience[] = [
   {
-    period: "Year 3",
-    title: "AI Team — AI Engineer",
+    period: "Recent",
+    title: "AI Engineer",
     detail:
-      "Shipped RAG and agent workflows, owned n8n automation operations, and supported DS-style tasks when needed. Focused on turning research into reliable, measurable delivery."
+      "Shipped RAG and agent workflows, owned n8n automation operations, and supported DS-style tasks when needed—always with reliability, observability, and clear guardrails."
   },
   {
-    period: "Years 1–2",
-    title: "Data Team — Data / Product-facing Engineering",
+    period: "Earlier",
+    title: "Data + Product-facing Engineering",
     detail:
-      "Worked on customer data and CDP-related needs, cross-functional integrations, and workflow improvements. Built systems with clear ownership and measurable outcomes."
+      "Worked on customer-data integrations and product improvements, collaborating closely with stakeholders and measuring impact in production."
   }
 ];
 
