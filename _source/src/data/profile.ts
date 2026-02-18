@@ -170,13 +170,13 @@ export const experience: Experience[] = [
     period: "Recent",
     title: "AI Engineer",
     detail:
-      "Shipped RAG and agent workflows, owned n8n automation operations, and supported DS-style tasks when needed—always with reliability, observability, and clear guardrails."
+      "Shipped production-grade RAG and agent workflows with an emphasis on reliability, security, and cost governance (guardrails, eval gates, observability, and clear runbooks)."
   },
   {
-    period: "Earlier",
-    title: "Data + Product-facing Engineering",
+    period: "KDAN (past year)",
+    title: "Data Analyst → Analytics Engineer",
     detail:
-      "Worked on customer-data integrations and product improvements, collaborating closely with stakeholders and measuring impact in production."
+      "Owned marketing/eCommerce analytics delivery at scale (800+ charts, 30+ recurring reports) and shipped 5+ ML projects. Introduced dbt and GitLab CI/CD to centralize transformation logic and enforce tests + version control, reducing data pipeline failures by 99% and establishing a single source of truth with standardized metric definitions. Deployed n8n workflow automation to significantly reduce manual effort in customer request triage/classification, and scoped a roadmap for real-time data processing. Tech stack: Python, SQL, dbt, GitLab CI/CD, n8n, BI/visualization tools."
   }
 ];
 
