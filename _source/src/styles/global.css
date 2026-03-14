@@ -15,6 +15,19 @@
   --radius-lg: 16px;
 }
 
+[data-theme="dark"] {
+  --bg: #0f1729;
+  --surface: #1a2540;
+  --surface-strong: #1e2d4a;
+  --ink: #e8e0d4;
+  --ink-soft: #a8b4c8;
+  --line: #2e3f5c;
+  --accent: #e8773a;
+  --accent-strong: #f0954f;
+  --chip: #243150;
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -32,6 +45,14 @@ body {
   background:
     radial-gradient(circle at 90% 0%, rgba(33, 72, 122, 0.14), transparent 34%),
     radial-gradient(circle at 10% 100%, rgba(213, 90, 19, 0.16), transparent 32%),
+    var(--bg);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at 90% 0%, rgba(33, 72, 122, 0.25), transparent 34%),
+    radial-gradient(circle at 10% 100%, rgba(213, 90, 19, 0.2), transparent 32%),
     var(--bg);
 }
 
@@ -522,6 +543,129 @@ h2 {
 
 .site-footer p {
   margin: 0;
+}
+
+/* ── Dark mode surface overrides ── */
+[data-theme="dark"] .site-nav {
+  background: rgba(26, 37, 64, 0.84);
+  border-color: var(--line);
+}
+
+[data-theme="dark"] .hero-surface {
+  background: linear-gradient(160deg, #131f38 0%, #1a2a48 56%, #1e2d42 100%);
+}
+
+[data-theme="dark"] .metrics-surface {
+  background: #141e34;
+}
+
+[data-theme="dark"] .capability-surface {
+  background: #121c36;
+}
+
+[data-theme="dark"] .capability-grid article {
+  border-color: var(--line);
+  background: var(--surface-strong);
+}
+
+[data-theme="dark"] .capability-grid p {
+  color: var(--ink-soft);
+}
+
+[data-theme="dark"] .process-surface {
+  background: #151f35;
+}
+
+[data-theme="dark"] .process-list article,
+[data-theme="dark"] .experience-grid li,
+[data-theme="dark"] .stack-panel {
+  background: var(--surface-strong);
+}
+
+[data-theme="dark"] .faq-surface {
+  background: #121a34;
+}
+
+[data-theme="dark"] .faq-list article {
+  border-color: var(--line);
+  background: var(--surface-strong);
+}
+
+[data-theme="dark"] .faq-list p {
+  color: var(--ink-soft);
+}
+
+[data-theme="dark"] .tag-list li {
+  border-color: var(--line);
+  background: var(--chip);
+}
+
+[data-theme="dark"] .contact-surface {
+  background: linear-gradient(140deg, #0a1628, #0f1d33);
+}
+
+/* ── Theme toggle button ── */
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  font-family: inherit;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ── Scroll animations ── */
+.fade-in-section {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Back to top button ── */
+.back-to-top {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 40;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  width: 44px;
+  height: 44px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(213, 90, 19, 0.35);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.2s ease;
+  pointer-events: none;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.back-to-top:hover {
+  background: var(--accent-strong);
 }
 
 @media (max-width: 1020px) {
