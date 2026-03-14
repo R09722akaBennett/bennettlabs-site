@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState, type RefObject } from "react";
 import {
   capabilities,
   experience,
@@ -9,6 +10,85 @@ import {
   projects,
   stackGroups
 } from "../data/profile";
+
+function useScrollVisible<T extends HTMLElement>(): [RefObject<T | null>, boolean] {
+  const ref = useRef<T | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.12 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return [ref, visible];
+}
+
+function FadeSection({ children, className = "", id }: { children: React.ReactNode; className?: string; id?: string }) {
+  const [ref, visible] = useScrollVisible<HTMLElement>();
+  return (
+    <section
+      ref={ref as React.Ref<HTMLElement>}
+      id={id}
+      className={`fade-in-section ${visible ? "is-visible" : ""} ${className}`}
+    >
+      {children}
+    </section>
+  );
+}
+
+function ThemeToggle() {
+  const [dark, setDark] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("theme") === "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  }, [dark]);
+
+  return (
+    <button
+      className="theme-toggle"
+      onClick={() => setDark((d) => !d)}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      {dark ? "\u2600\uFE0F Light" : "\uD83C\uDF19 Dark"}
+    </button>
+  );
+}
+
+function BackToTop() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <button
+      className={`back-to-top ${visible ? "visible" : ""}`}
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="Back to top"
+    >
+      &#8593;
+    </button>
+  );
+}
 
 function SiteNav() {
   return (
@@ -22,6 +102,7 @@ function SiteNav() {
         <a href="#process">Process</a>
         <a href="#experience">Experience</a>
         <a href="#contact">Contact</a>
+        <ThemeToggle />
       </nav>
     </header>
   );
@@ -85,7 +166,7 @@ export function ConceptEditorial() {
         </div>
       </section>
 
-      <section className="concept metrics-surface">
+      <FadeSection className="concept metrics-surface">
         <div className="section-heading">
           <p className="eyebrow">Professional Snapshot</p>
           <h2>What I optimize for in every AI engagement.</h2>
@@ -99,9 +180,9 @@ export function ConceptEditorial() {
             </article>
           ))}
         </div>
-      </section>
+      </FadeSection>
 
-      <section id="projects" className="concept">
+      <FadeSection className="concept" id="projects">
         <div className="section-heading">
           <p className="eyebrow">Selected Projects</p>
           <h2>From practical side projects to production-minded systems.</h2>
@@ -121,9 +202,9 @@ export function ConceptEditorial() {
             </article>
           ))}
         </div>
-      </section>
+      </FadeSection>
 
-      <section id="capabilities" className="concept capability-surface">
+      <FadeSection className="concept capability-surface" id="capabilities">
         <div className="section-heading">
           <p className="eyebrow">Capabilities</p>
           <h2>Engineering depth across product, architecture, and delivery.</h2>
@@ -136,9 +217,9 @@ export function ConceptEditorial() {
             </article>
           ))}
         </div>
-      </section>
+      </FadeSection>
 
-      <section id="process" className="concept process-surface">
+      <FadeSection className="concept process-surface" id="process">
         <div className="section-heading">
           <p className="eyebrow">Working Process</p>
           <h2>A delivery model built for speed without sacrificing reliability.</h2>
@@ -151,9 +232,9 @@ export function ConceptEditorial() {
             </article>
           ))}
         </div>
-      </section>
+      </FadeSection>
 
-      <section id="experience" className="concept">
+      <FadeSection className="concept" id="experience">
         <div className="section-heading">
           <p className="eyebrow">Experience</p>
           <h2>Built through shipping, debugging, and scaling in real environments.</h2>
@@ -182,9 +263,9 @@ export function ConceptEditorial() {
             ))}
           </div>
         </div>
-      </section>
+      </FadeSection>
 
-      <section className="concept faq-surface">
+      <FadeSection className="concept faq-surface">
         <div className="section-heading">
           <p className="eyebrow">FAQ</p>
           <h2>Common questions before starting a collaboration.</h2>
@@ -197,9 +278,9 @@ export function ConceptEditorial() {
             </article>
           ))}
         </div>
-      </section>
+      </FadeSection>
 
-      <section id="contact" className="concept contact-surface">
+      <FadeSection className="concept contact-surface" id="contact">
         <div className="contact-grid">
           <div>
             <p className="eyebrow">Contact</p>
@@ -224,12 +305,14 @@ export function ConceptEditorial() {
             <SocialLinks />
           </aside>
         </div>
-      </section>
+      </FadeSection>
 
       <footer className="site-footer">
         <p>{profile.name}</p>
         <p>{profile.role}</p>
       </footer>
+
+      <BackToTop />
     </>
   );
 }
