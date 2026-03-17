@@ -1,0 +1,113 @@
+---
+import "../styles/global.css";
+
+import "@fontsource/geist-sans/400.css";
+import "@fontsource/geist-sans/500.css";
+import "@fontsource/geist-sans/600.css";
+import "@fontsource/geist-sans/700.css";
+import "@fontsource/geist-mono/400.css";
+import "@fontsource/geist-mono/500.css";
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const { title, description } = Astro.props;
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="generator" content={Astro.generator} />
+
+<link rel="canonical" href={canonicalURL} />
+
+<title>{title}</title>
+<meta name="title" content={title} />
+<meta name="description" content={description} />
+
+<meta property="og:type" content="website" />
+<meta property="og:url" content={Astro.url} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:site_name" content="Bennett Labs" />
+
+<meta property="twitter:card" content="summary" />
+<meta property="twitter:title" content={title} />
+<meta property="twitter:description" content={description} />
+
+<script is:inline>
+  function init() {
+    preloadTheme();
+    onScroll();
+    animate();
+
+    const backToTop = document.getElementById("back-to-top");
+    backToTop?.addEventListener("click", (event) => {
+      event.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    const lightBtn = document.getElementById("light-theme-button");
+    lightBtn?.addEventListener("click", () => {
+      localStorage.setItem("theme", "light");
+      toggleTheme(false);
+    });
+
+    const darkBtn = document.getElementById("dark-theme-button");
+    darkBtn?.addEventListener("click", () => {
+      localStorage.setItem("theme", "dark");
+      toggleTheme(true);
+    });
+
+    document.addEventListener("scroll", onScroll);
+  }
+
+  function animate() {
+    const els = document.querySelectorAll(".animate");
+    els.forEach((el, i) => {
+      setTimeout(() => el.classList.add("show"), i * 80);
+    });
+  }
+
+  function onScroll() {
+    if (window.scrollY > 0) {
+      document.documentElement.classList.add("scrolled");
+    } else {
+      document.documentElement.classList.remove("scrolled");
+    }
+  }
+
+  function toggleTheme(dark) {
+    const css = document.createElement("style");
+    css.appendChild(
+      document.createTextNode(
+        "* { -webkit-transition: none !important; -moz-transition: none !important; -o-transition: none !important; transition: none !important; }"
+      )
+    );
+    document.head.appendChild(css);
+
+    if (dark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+
+    window.getComputedStyle(css).opacity;
+    document.head.removeChild(css);
+  }
+
+  function preloadTheme() {
+    const userTheme = localStorage.theme;
+    if (userTheme === "dark") {
+      toggleTheme(true);
+    } else {
+      toggleTheme(false);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => init());
+  document.addEventListener("astro:after-swap", () => init());
+  preloadTheme();
+</script>

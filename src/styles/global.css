@@ -1,0 +1,233 @@
+@import 'tailwindcss' source(none);
+@source "../pages";
+@source "../components";
+@source "../layouts";
+@source "../styles";
+
+@plugin '@tailwindcss/typography';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: Geist Sans, ui-sans-serif, system-ui, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono: Geist Mono, ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  /* Cool-toned palette for AI Engineer brand */
+  --color-surface: #fafaf9;
+  --color-surface-dark: #0c0f1a;
+  --color-surface-raised: #ffffff;
+  --color-surface-raised-dark: #141825;
+  --color-surface-muted: #f0efed;
+  --color-surface-muted-dark: #1a1e2e;
+
+  --color-border: #e2e0dc;
+  --color-border-dark: #252a3a;
+
+  --color-text: #1c1917;
+  --color-text-dark: #e7e5e4;
+  --color-text-muted: #78716c;
+  --color-text-muted-dark: #78859b;
+
+  /* Primary accent: cyan/teal */
+  --color-accent: #0891b2;
+  --color-accent-muted: #e0f7fa;
+  --color-accent-dark: #22d3ee;
+  --color-accent-muted-dark: #083344;
+
+  /* Secondary accent: amber for CTA/highlight */
+  --color-warm: #d97706;
+  --color-warm-muted: #fef3c7;
+  --color-warm-dark: #f59e0b;
+  --color-warm-muted-dark: #451a03;
+
+  /* Supplementary */
+  --color-purple: #8b5cf6;
+  --color-purple-dark: #a78bfa;
+  --color-green: #059669;
+  --color-green-dark: #34d399;
+}
+
+/* Root CSS variable overrides for runtime switching */
+:root {
+  --color-text: #1c1917;
+  --color-text-muted: #78716c;
+  --color-border: #e2e0dc;
+  --color-surface: #fafaf9;
+  --color-surface-raised: #ffffff;
+  --color-surface-muted: #f0efed;
+  --color-accent: #0891b2;
+  --color-accent-muted: #e0f7fa;
+  --color-warm: #d97706;
+  --color-warm-muted: #fef3c7;
+  --color-purple: #8b5cf6;
+  --color-green: #059669;
+}
+.dark {
+  --color-text: #e7e5e4;
+  --color-text-muted: #78859b;
+  --color-border: #252a3a;
+  --color-surface: #0c0f1a;
+  --color-surface-raised: #141825;
+  --color-surface-muted: #1a1e2e;
+  --color-accent: #22d3ee;
+  --color-accent-muted: #083344;
+  --color-warm: #f59e0b;
+  --color-warm-muted: #451a03;
+  --color-purple: #a78bfa;
+  --color-green: #34d399;
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border);
+  }
+}
+
+@layer utilities {
+  html {
+    overflow-y: auto;
+    color-scheme: light;
+    scroll-behavior: smooth;
+    scroll-padding-top: 100px;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+
+  html, body {
+    @apply size-full;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    @apply flex flex-col;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    @apply break-words;
+  }
+
+  header {
+    @apply fixed left-0 right-0 top-0 z-50;
+    @apply py-4;
+    background-color: color-mix(in srgb, var(--color-surface) 85%, transparent);
+    backdrop-filter: blur(12px) saturate(1.5);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  main {
+    @apply flex-1;
+    padding-top: 6rem;
+    padding-bottom: 4rem;
+  }
+
+  footer {
+    @apply py-6 text-sm;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+}
+
+/* Animate */
+.animate {
+  @apply -translate-y-2 opacity-0;
+  @apply transition-all duration-500 ease-out;
+}
+.animate.show {
+  @apply translate-y-0 opacity-100;
+}
+
+/* Back to top visibility */
+html #back-to-top {
+  @apply pointer-events-none opacity-0;
+}
+html.scrolled #back-to-top {
+  @apply pointer-events-auto opacity-100;
+}
+
+/* Card system */
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background-color: var(--color-surface-raised);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+  border-color: color-mix(in srgb, var(--color-border) 50%, var(--color-text) 20%);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.dark .card:hover {
+  border-color: color-mix(in srgb, var(--color-border) 50%, var(--color-text) 15%);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+/* Accent bar variants */
+.card-accent-cyan {
+  border-left: 3px solid var(--color-accent);
+}
+.card-accent-warm {
+  border-left: 3px solid var(--color-warm);
+}
+.card-accent-purple {
+  border-left: 3px solid var(--color-purple);
+}
+.card-accent-green {
+  border-left: 3px solid var(--color-green);
+}
+
+/* Section title */
+.section-title {
+  @apply text-xs font-mono font-semibold uppercase tracking-[0.15em];
+  color: var(--color-text-muted);
+}
+
+/* Meta text */
+.meta {
+  @apply font-mono text-xs;
+  color: var(--color-text-muted);
+}
+
+/* Tags */
+.tag {
+  display: inline-block;
+  border-radius: 2px;
+  padding: 2px 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+}
+.tag-tech {
+  color: var(--color-accent);
+  background-color: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+.tag-warm {
+  color: var(--color-warm);
+  background-color: color-mix(in srgb, var(--color-warm) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-warm) 20%, transparent);
+}
+
+/* Gradient divider */
+.gradient-divider {
+  height: 1px;
+  background: linear-gradient(to right, var(--color-accent), var(--color-warm), transparent);
+  border: none;
+}
+
+/* Focus area pills */
+.focus-pill {
+  @apply inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-raised);
+  color: var(--color-text);
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.focus-pill:hover {
+  border-color: var(--color-accent);
+  background-color: color-mix(in srgb, var(--color-accent) 5%, var(--color-surface-raised));
+}
