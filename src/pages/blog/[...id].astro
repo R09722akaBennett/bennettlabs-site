@@ -1,0 +1,47 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Container from "@components/Container.astro";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { id: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Layout title={post.data.title} description={post.data.description}>
+  <Container>
+    <section class="animate mb-16" style="max-width: 720px;">
+      <a href="/blog/" class="inline-flex items-center gap-1 text-xs font-medium mb-6 no-underline" style="color: var(--color-text-muted);">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back to blog
+      </a>
+
+      <div class="flex flex-wrap items-center gap-2 mb-4">
+        <span class="meta">{post.data.date.toISOString().slice(0, 10)}</span>
+        {post.data.tags.map((tag: string) => (
+          <span class="tag tag-tech">{tag}</span>
+        ))}
+      </div>
+
+      <h1 class="text-2xl font-bold tracking-tight sm:text-3xl mb-2" style="color: var(--color-text); line-height: 1.2;">
+        {post.data.title}
+      </h1>
+      <p class="text-sm mb-8" style="color: var(--color-text-muted);">
+        {post.data.description}
+      </p>
+
+      <hr class="gradient-divider mb-8" />
+
+      <article>
+        <Content />
+      </article>
+    </section>
+  </Container>
+</Layout>

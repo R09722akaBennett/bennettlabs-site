@@ -1,0 +1,48 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Container from "@components/Container.astro";
+import { getCollection } from "astro:content";
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<Layout title="Blog" description="Writing about AI engineering, production systems, and lessons learned.">
+  <Container>
+    <section class="animate mb-16">
+      <hr class="gradient-divider mb-8" />
+      <p class="section-title mb-3">Blog</p>
+      <h1 class="mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style="color: var(--color-text);">
+        Writing
+      </h1>
+      <p class="mb-8 text-sm leading-relaxed" style="color: var(--color-text-muted); max-width: 540px;">
+        Notes on building AI systems for production — multi-agent architectures, RAG pipelines, infrastructure decisions, and lessons from shipping.
+      </p>
+
+      {posts.length === 0 ? (
+        <div class="card p-8 text-center">
+          <p class="text-sm" style="color: var(--color-text-muted);">Posts coming soon.</p>
+        </div>
+      ) : (
+        <div class="flex flex-col gap-4">
+          {posts.map((post) => (
+            <a href={`/blog/${post.id}/`} class="card card-accent-cyan p-5 no-underline group">
+              <div class="flex flex-wrap items-center gap-2 mb-2">
+                <span class="meta">{post.data.date.toISOString().slice(0, 10)}</span>
+                {post.data.tags.map((tag) => (
+                  <span class="tag tag-tech">{tag}</span>
+                ))}
+              </div>
+              <h2 class="text-sm font-semibold group-hover:underline" style="color: var(--color-text);">
+                {post.data.title}
+              </h2>
+              <p class="mt-1.5 text-xs leading-relaxed" style="color: var(--color-text-muted);">
+                {post.data.description}
+              </p>
+            </a>
+          ))}
+        </div>
+      )}
+    </section>
+  </Container>
+</Layout>
