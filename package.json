@@ -1,0 +1,8 @@
+{
+  "name": "bennettlabs-site-deploy",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "npm --prefix _source ci && npm --prefix _source run build"
+  }
+}
