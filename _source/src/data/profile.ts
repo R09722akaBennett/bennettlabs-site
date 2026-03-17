@@ -113,6 +113,24 @@ export const capabilities: Capability[] = [
 
 export const projects: Project[] = [
   {
+    title: "AI News War Room",
+    summary:
+      "Automated AI intelligence dashboard that collects news from 80+ sources, generates strategic reports with LLM analysis, and tracks 14 competitors with weekly/monthly/quarterly trend summaries.",
+    impact:
+      "Replaced hours of manual industry monitoring with a fully automated pipeline—daily cron on Mac Studio, SQLite storage, auto-deployed to Vercel.",
+    stack: ["Astro", "Python", "Gemini API", "SQLite", "Vercel"],
+    href: "https://github.com/R09722akaBennett/ainews-warroom"
+  },
+  {
+    title: "NanoPDF MCP Server",
+    summary:
+      "Model Context Protocol server that integrates AI-powered PDF editing into Claude Desktop—modify slides via natural language, generate new pages, and maintain searchable text layers with OCR.",
+    impact:
+      "Privacy-first architecture with local versioning and undo support. Demonstrates MCP integration patterns for extending LLM tool capabilities.",
+    stack: ["Python", "MCP", "Gemini 3 Pro", "Tesseract OCR"],
+    href: "https://github.com/R09722akaBennett/nano-pdf-mcp"
+  },
+  {
     title: "Prompt Injection Tripwire",
     summary:
       "Scans untrusted text (web/tool outputs) for injection/exfil patterns and returns allow/ask/block with evidence.",
@@ -135,8 +153,7 @@ export const projects: Project[] = [
     summary:
       "Mutates agent traces with controlled drops/truncation/jitter to regression-test robustness under noisy tools.",
     impact:
-      "Turns " +
-      "clean-demo agents into production-ready systems by testing real failure modes before users hit them.",
+      "Turns clean-demo agents into production-ready systems by testing real failure modes before users hit them.",
     stack: ["Python", "Testing", "Eval tooling"],
     href: "https://github.com/R09722akaBennett/ai-daily-2026-02-14-agent-noise-harness"
   }
