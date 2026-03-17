@@ -3,6 +3,6 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "build": "npm --prefix _source ci && npm --prefix _source run build"
+    "build": "npm --prefix _source ci && npm --prefix _source run build && rm -rf dist && mkdir -p dist && cp -R _source/dist/. dist/"
   }
 }
