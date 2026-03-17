@@ -9,6 +9,9 @@ import {
   capabilities,
   process,
   experience,
+  education,
+  certifications,
+  community,
   stackGroups,
   faqs,
 } from "@data/profile";
@@ -28,7 +31,7 @@ import {
           <h1 class="mb-4 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl" style="color: var(--color-text); line-height: 1.1;">
             {profile.tagline}
           </h1>
-          <p class="mb-6 text-base leading-relaxed" style="color: var(--color-text-muted); max-width: 540px;">
+          <p class="mb-6 text-base leading-relaxed" style="color: var(--color-text-muted); max-width: 580px;">
             {profile.intro}
           </p>
           <div class="flex flex-wrap gap-2">
@@ -68,12 +71,12 @@ import {
 
     <!-- Metrics snapshot -->
     <section class="animate mb-16">
-      <p class="section-title mb-4">Professional snapshot</p>
+      <p class="section-title mb-4">By the numbers</p>
       <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {metrics.map((m) => (
           <div class="card card-accent-cyan p-4">
             <p class="meta mb-1">{m.label}</p>
-            <p class="text-base font-semibold" style="color: var(--color-text);">{m.value}</p>
+            <p class="text-lg font-bold" style="color: var(--color-accent);">{m.value}</p>
             <p class="mt-1 text-xs leading-relaxed" style="color: var(--color-text-muted);">{m.note}</p>
           </div>
         ))}
@@ -85,32 +88,44 @@ import {
       <hr class="gradient-divider mb-6" />
       <p class="section-title mb-4">Featured projects</p>
       <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {projects.map((p, i) => (
-          <a href={p.href} target="_blank" rel="noopener" class:list={[
-            "card p-5 flex flex-col gap-3 no-underline group",
-            i % 3 === 0 ? "card-accent-cyan" : i % 3 === 1 ? "card-accent-warm" : "card-accent-purple"
-          ]}>
-            <div>
-              <h3 class="text-sm font-semibold group-hover:underline" style="color: var(--color-text);">{p.title}</h3>
-              <p class="mt-1.5 text-xs leading-relaxed" style="color: var(--color-text-muted);">{p.summary}</p>
+        {projects.map((p, i) => {
+          const accentClass = i % 3 === 0 ? "card-accent-cyan" : i % 3 === 1 ? "card-accent-warm" : "card-accent-purple";
+          const inner = (
+            <>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-sm font-semibold" style="color: var(--color-text);">{p.title}</h3>
+                  {!p.href && <span class="tag tag-warm">Internal</span>}
+                </div>
+                <p class="mt-1.5 text-xs leading-relaxed" style="color: var(--color-text-muted);">{p.summary}</p>
+              </div>
+              <p class="text-xs leading-relaxed" style="color: var(--color-text-muted);">
+                <span class="font-semibold" style="color: var(--color-text);">Impact:</span> {p.impact}
+              </p>
+              <div class="mt-auto flex flex-wrap gap-1.5">
+                {p.stack.map((s) => (
+                  <span class="tag tag-tech">{s}</span>
+                ))}
+              </div>
+            </>
+          );
+          return p.href ? (
+            <a href={p.href} target="_blank" rel="noopener" class:list={["card p-5 flex flex-col gap-3 no-underline group", accentClass]}>
+              {inner}
+            </a>
+          ) : (
+            <div class:list={["card p-5 flex flex-col gap-3", accentClass]}>
+              {inner}
             </div>
-            <p class="text-xs leading-relaxed" style="color: var(--color-text-muted);">
-              <span class="font-semibold" style="color: var(--color-text);">Impact:</span> {p.impact}
-            </p>
-            <div class="mt-auto flex flex-wrap gap-1.5">
-              {p.stack.map((s) => (
-                <span class="tag tag-tech">{s}</span>
-              ))}
-            </div>
-          </a>
-        ))}
+          );
+        })}
       </div>
     </section>
 
     <!-- Capabilities -->
     <section id="capabilities" class="animate mb-16">
       <hr class="gradient-divider mb-6" />
-      <p class="section-title mb-4">Core capabilities</p>
+      <p class="section-title mb-4">What I build</p>
       <div class="grid gap-4 md:grid-cols-2">
         {capabilities.map((c, i) => (
           <div class:list={[
@@ -130,7 +145,7 @@ import {
       <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {process.map((step, i) => (
           <div class="card card-accent-green p-5">
-            <span class="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold" style={`background-color: color-mix(in srgb, var(--color-green) 15%, transparent); color: var(--color-green);`}>
+            <span class="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold" style="background-color: color-mix(in srgb, var(--color-green) 15%, transparent); color: var(--color-green);">
               {i + 1}
             </span>
             <h3 class="mt-2 text-sm font-semibold" style="color: var(--color-text);">{step.title}</h3>
@@ -140,27 +155,58 @@ import {
       </div>
     </section>
 
-    <!-- Experience + Stack -->
+    <!-- Experience -->
     <section id="experience" class="animate mb-16">
       <hr class="gradient-divider mb-6" />
-      <div class="grid gap-8 lg:grid-cols-[1.3fr_1fr]">
+      <p class="section-title mb-4">Career journey</p>
+      <div class="flex flex-col gap-4">
+        {experience.map((e, i) => (
+          <div class:list={[
+            "card p-5",
+            i === 0 ? "card-accent-cyan" : i <= 2 ? "card-accent-warm" : "card-accent-purple"
+          ]}>
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="tag tag-tech">{e.period}</span>
+              <h3 class="text-sm font-semibold" style="color: var(--color-text);">{e.title}</h3>
+              <span class="meta">@ {e.org}</span>
+            </div>
+            <p class="text-xs leading-relaxed" style="color: var(--color-text-muted);">{e.detail}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Education + Certifications + Toolkit -->
+    <section class="animate mb-16">
+      <div class="grid gap-8 lg:grid-cols-3">
+        <!-- Education -->
         <div>
-          <p class="section-title mb-4">Experience</p>
-          <div class="flex flex-col gap-4">
-            {experience.map((e, i) => (
-              <div class:list={[
-                "card p-5",
-                i === 0 ? "card-accent-cyan" : "card-accent-warm"
-              ]}>
-                <div class="flex items-center gap-2 mb-2">
-                  <span class="tag tag-tech">{e.period}</span>
-                  <h3 class="text-sm font-semibold" style="color: var(--color-text);">{e.title}</h3>
-                </div>
-                <p class="text-xs leading-relaxed" style="color: var(--color-text-muted);">{e.detail}</p>
+          <p class="section-title mb-4">Education</p>
+          <div class="flex flex-col gap-3">
+            {education.map((ed) => (
+              <div class="card card-accent-purple p-4">
+                <p class="text-sm font-semibold" style="color: var(--color-text);">{ed.degree}</p>
+                <p class="meta mt-1">{ed.school}</p>
+                <p class="meta">{ed.period}</p>
               </div>
             ))}
           </div>
         </div>
+
+        <!-- Certifications -->
+        <div>
+          <p class="section-title mb-4">Certifications</p>
+          <div class="flex flex-col gap-3">
+            {certifications.map((cert) => (
+              <div class="card p-4">
+                <p class="text-xs font-semibold" style="color: var(--color-text);">{cert.name}</p>
+                <p class="meta mt-1">{cert.issuer} / {cert.year}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Toolkit -->
         <div>
           <p class="section-title mb-4">Toolkit</p>
           <div class="flex flex-col gap-3">
@@ -176,6 +222,19 @@ import {
             ))}
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Community -->
+    <section class="animate mb-16">
+      <p class="section-title mb-4">Community</p>
+      <div class="grid gap-4 md:grid-cols-2">
+        {community.map((c) => (
+          <div class="card card-accent-warm p-5">
+            <h3 class="text-sm font-semibold mb-2" style="color: var(--color-text);">{c.title}</h3>
+            <p class="text-xs leading-relaxed" style="color: var(--color-text-muted);">{c.detail}</p>
+          </div>
+        ))}
       </div>
     </section>
 
