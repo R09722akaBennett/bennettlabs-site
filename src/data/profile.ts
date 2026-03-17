@@ -7,7 +7,7 @@ export const profile = {
   tagline:
     "Ship it, monitor it, own it.",
   intro:
-    "AI Engineer at KDAN, driving AI strategy at HQ R&D. I build multi-agent systems, RAG pipelines, and document AI solutions shipped to production — from contract risk analysis to form field detection to enterprise data access. Everything I build is designed for real-world reliability: observable, auditable, and cost-aware.",
+    "AI Engineer at KDAN, driving AI strategy at HQ R&D. I build multi-agent systems, RAG pipelines, and document AI solutions shipped to production. On the side, I'm an indie developer building iOS apps and knowledge platforms with AI features. Everything I build is designed for real-world reliability: observable, auditable, and cost-aware.",
   email: "info@bennettlabs.dev",
   links: {
     github: "https://github.com/R09722akaBennett?tab=repositories",
@@ -17,10 +17,10 @@ export const profile = {
 };
 
 export const focusAreas = [
-  "RAG pipelines with citations & fallbacks",
-  "Agent workflows that survive flaky tools",
+  "Multi-agent systems & RAG pipelines",
+  "iOS apps with AI features",
   "Data infrastructure & DataOps",
-  "LLM cost governance & security",
+  "Indie developer & side projects",
 ];
 
 export type Metric = { label: string; value: string; note: string };
@@ -62,7 +62,7 @@ export const projects: Project[] = [
     impact:
       "Runs autonomously on a daily cron. Replaced hours of manual industry monitoring with a pipeline that auto-deploys to Vercel.",
     stack: ["Astro", "Python", "Gemini API", "SQLite", "Vercel"],
-    href: "https://github.com/R09722akaBennett/ainews-warroom",
+    href: "",
   },
   {
     title: "NanoPDF MCP Server",
@@ -72,6 +72,24 @@ export const projects: Project[] = [
       "Privacy-first: all processing is local with built-in versioning and undo. A working reference for MCP tool integration patterns.",
     stack: ["Python", "MCP", "Gemini 3 Pro", "Tesseract OCR"],
     href: "https://github.com/R09722akaBennett/nano-pdf-mcp",
+  },
+  {
+    title: "DS Interview Lab",
+    summary:
+      "Interactive data science interview prep platform with 14 topics, live Python execution in the browser (Pyodide), D3 visualizations (gradient descent, attention heatmaps, decision boundaries), and AI-powered mock interviews with scoring.",
+    impact:
+      "Live at ds.bennettlabs.dev. Covers statistics, ML, deep learning, system design, and SQL — with flashcards, quizzes, and a confidence tracker.",
+    stack: ["Next.js", "TypeScript", "Pyodide", "D3.js", "Gemini API", "Cloudflare"],
+    href: "https://ds.bennettlabs.dev",
+  },
+  {
+    title: "FitTrack",
+    summary:
+      "AI-powered fitness and nutrition tracking iOS app. Snap a photo of your meal for instant nutritional analysis, get personalized workout plans, and receive daily AI tips based on your 7-day history.",
+    impact:
+      "Full-stack indie project: SwiftUI frontend with SwiftData, FastAPI + PostgreSQL backend, Gemini for AI features. Multi-language support (EN/ZH/JA/KO).",
+    stack: ["SwiftUI", "FastAPI", "PostgreSQL", "Gemini API", "Docker"],
+    href: "",
   },
   {
     title: "Contract Risk Analysis Agent",
@@ -245,7 +263,8 @@ export const stackGroups: StackGroup[] = [
   { title: "AI / LLM", items: ["Google ADK", "OpenAI Agents SDK", "RAG", "MCP", "RAGAS", "Langfuse", "Vertex AI"] },
   { title: "ML / Vision", items: ["YOLO", "Gemini Vision", "XGBoost", "Prophet", "MLflow", "SageMaker"] },
   { title: "Data", items: ["Python", "SQL", "dbt", "BigQuery", "Airflow", "Qdrant", "ChromaDB", "SQLite"] },
-  { title: "Infra", items: ["FastAPI", "Cloud Run", "Docker", "GitLab CI/CD", "Grafana", "n8n", "Streamlit"] },
+  { title: "Mobile", items: ["SwiftUI", "SwiftData", "iOS", "Vibe coding"] },
+  { title: "Infra", items: ["FastAPI", "Cloud Run", "Docker", "GitLab CI/CD", "Grafana", "n8n"] },
 ];
 
 export type Community = { title: string; detail: string };
@@ -273,8 +292,8 @@ export const faqs: Faq[] = [
       "Email info@bennettlabs.dev. Include a brief context: what you're building, what stack you're on, and what's not working yet. I'll respond within 24 hours.",
   },
   {
-    question: "Can you do a technical demo?",
+    question: "What are you building outside of work?",
     answer:
-      "Yes — but I prefer demos that show failure modes, cost dashboards, and eval results alongside the happy path. That's closer to what production actually looks like.",
+      "iOS apps with AI features (vibe coding with SwiftUI), and knowledge platforms like DS Interview Lab. I'm exploring the indie developer path — shipping side projects that solve real problems.",
   },
 ];
