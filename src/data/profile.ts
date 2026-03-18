@@ -58,9 +58,9 @@ export const projects: Project[] = [
   {
     title: "AI News War Room",
     summary:
-      "Fully automated intelligence dashboard that monitors 80+ AI news sources, generates daily strategic reports with Gemini, and tracks 14 competitors — zero manual effort.",
+      "Autonomous intelligence platform that turns 80+ AI news sources into daily strategic reports and competitor tracking for 14 companies — powered by context engineering that compresses accumulated history into efficient LLM context via a daily→weekly→monthly→quarterly pyramid.",
     impact:
-      "Runs autonomously on a daily cron. Replaced hours of manual industry monitoring with a pipeline that auto-deploys to Vercel.",
+      "Zero manual effort: daily cron collects, deduplicates, compresses, and deploys. Dual-track analysis (company-specific strategy + objective industry view) with full token cost observability.",
     stack: ["Astro", "Python", "Gemini API", "SQLite", "Vercel"],
     href: "",
   },
