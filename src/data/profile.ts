@@ -74,13 +74,13 @@ export const projects: Project[] = [
     href: "https://github.com/R09722akaBennett/nano-pdf-mcp",
   },
   {
-    title: "DS Interview Lab",
+    title: "Cortex",
     summary:
       "Interactive data science interview prep platform with 14 topics, live Python execution in the browser (Pyodide), D3 visualizations (gradient descent, attention heatmaps, decision boundaries), and AI-powered mock interviews with scoring.",
     impact:
       "Live at ds.bennettlabs.dev. Covers statistics, ML, deep learning, system design, and SQL — with flashcards, quizzes, and a confidence tracker.",
     stack: ["Next.js", "TypeScript", "Pyodide", "D3.js", "Gemini API", "Cloudflare"],
-    href: "https://ds.bennettlabs.dev",
+    href: "https://cortex.bennettlabs.dev/",
   },
   {
     title: "FitTrack",
