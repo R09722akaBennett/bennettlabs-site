@@ -1,7 +1,7 @@
 ---
-title: "Building a GraphRAG System on Top of Redmine"
-description: "Why vector search alone wasn't enough for our 19K-issue knowledge base — and how layering a Neo4j knowledge graph on Qdrant retrieval gave the LLM the structural context it was missing."
-date: 2026-03-28
+title: "When Vector Search Isn't Enough: Adding a Knowledge Graph to RAG"
+description: "Why vector search alone wasn't enough for a 19K-issue knowledge base — and how layering a knowledge graph on top of semantic retrieval gave the LLM the structural context it was missing."
+date: 2026-03-23
 tags: ["GraphRAG", "Neo4j", "Qdrant", "RAG", "knowledge-graph", "production"]
 draft: false
 ---

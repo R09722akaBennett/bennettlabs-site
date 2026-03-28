@@ -5,6 +5,14 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   site: "https://bennettlabs.dev",
   integrations: [sitemap()],
+  markdown: {
+    shikiConfig: {
+      themes: {
+        light: "github-light",
+        dark: "github-dark",
+      },
+    },
+  },
   vite: {
     plugins: [tailwindcss()],
   },

@@ -1,7 +1,7 @@
 ---
 title: "Community Detection for Global Queries in Enterprise Knowledge Graphs"
 description: "How I used Leiden community detection and Map-Reduce to make a company-wide knowledge graph answer big-picture questions like 'What's our biggest technical bottleneck?' — not just ticket-level lookups."
-date: 2026-03-24
+date: 2026-03-27
 tags: ["GraphRAG", "Neo4j", "community-detection", "Leiden", "knowledge-graph", "production"]
 draft: false
 ---

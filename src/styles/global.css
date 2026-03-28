@@ -270,10 +270,14 @@ pre {
   @apply py-5 rounded-md;
   border: 1px solid var(--color-border);
   background-color: var(--color-surface-muted) !important;
-  color: var(--color-text) !important;
 }
-pre code {
-  color: var(--color-text) !important;
+/* Shiki dual-theme: light colors are inline, swap to --shiki-dark in dark mode */
+html.dark pre.astro-code,
+html.dark pre.astro-code span {
+  color: var(--shiki-dark) !important;
+}
+html.dark pre.astro-code {
+  background-color: var(--color-surface-muted) !important;
 }
 article code:not(pre code) {
   @apply rounded px-1.5 py-0.5 text-sm font-mono;
