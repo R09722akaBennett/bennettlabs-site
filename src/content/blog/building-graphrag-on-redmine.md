@@ -88,13 +88,7 @@ A key design decision: **we don't use LLM entity extraction**. Microsoft's Graph
 
 Redmine already **is** a structured database. Every relationship is authoritative. The `ASSIGNED_TO` edge isn't a guess from an LLM parsing "Alice mentioned she's working on this" — it's a database record. We get a higher-quality graph at zero extraction cost.
 
-The sync pipeline runs as a CLI command:
-
-```bash
-python -m src.main graph-sync --full
-```
-
-Phase 1 fetches reference data live from Redmine's API (projects, versions, memberships, groups). Phase 2 reads issues from a local SQLite cache and upserts them with all relationships. 19,197 issues take about 3 minutes to fully sync.
+The sync pipeline runs in two phases. Phase 1 fetches reference data from Redmine's API (projects, versions, memberships, groups). Phase 2 reads issues from a local cache and upserts them with all relationships into Neo4j. A full sync of 19,197 issues takes about 3 minutes.
 
 ### Custom fields as dynamic properties
 
@@ -132,7 +126,7 @@ RETURN i, p.name AS project, assignee.name AS assignee,
        parent.id AS parent_id, parent.subject AS parent_subject
 ```
 
-Then a second query grabs related issues, and a third finds siblings (issues with the same parent). In one API call, the LLM gets the issue's project, owner, status, parent task context, sibling tasks, and any linked issues — structured data that would take a human several clicks to gather in Redmine's UI.
+Then a second query grabs related issues, and a third finds siblings (issues with the same parent). In a single retrieval step, the LLM gets the issue's project, owner, status, parent task context, sibling tasks, and any linked issues — structured data that would take a human several clicks to gather in the UI.
 
 ### Pattern 2: Vector search → graph expansion
 
@@ -178,13 +172,7 @@ The scoring formula `experience / (open_count + 1)` balances expertise against c
 
 ### Pattern 4: Multi-hop risk assessment
 
-The risk assessment endpoint traverses multiple relationship paths to compute risk signals:
-
-```
-GET /api/risk/12345
-```
-
-Five graph traversals run in sequence:
+Given any issue, the system traverses multiple relationship paths to compute risk signals. Five graph traversals run in sequence:
 
 1. **Parent overload** — `CHILD_OF → parent → count siblings`. If the parent has 50+ children, it's a sprawling epic that likely has coordination risk.
 2. **Version health** — `TARGETS_VERSION → version → all issues in version → status`. If the target version has <50% resolution rate, the release is at risk.
@@ -192,7 +180,7 @@ Five graph traversals run in sequence:
 4. **Blocking chain** — `BLOCKED_BY → blocker → status`. If a blocker is still open, this issue can't progress.
 5. **Historical pattern** — `BELONGS_TO → project, HAS_TRACKER → tracker → all closed issues → avg resolution time`. If similar issues historically take 30+ days to close, flag it.
 
-Each signal gets a severity rating. The endpoint returns a structured risk assessment:
+Each signal gets a severity rating. The output is a structured risk assessment:
 
 ```json
 {
@@ -225,26 +213,11 @@ This is pure graph reasoning. No LLM involved, no embedding, no semantic similar
 
 ## Duplicate detection: where both systems shine together
 
-The `/api/suggest` endpoint is where the vector + graph combination is most visible.
+Duplicate detection is where the vector + graph combination is most visible. The flow has three steps:
 
-**Step 1 — Qdrant semantic search**: Find the top 5 issues with similar text (score ≥ 0.88 threshold).
+**Step 1 — Semantic search**: Qdrant returns the top 5 issues with similar text (score ≥ 0.88 threshold).
 
-**Step 2 — Neo4j structural validation**: For each high-similarity candidate, check three structural signals:
-
-```python
-# Same project as the new issue?
-MATCH (i:Issue {id: $id})-[:BELONGS_TO]->(p:Project)
-→ reasons.append("same_project")
-
-# Same tracker type?
-MATCH (i:Issue {id: $id})-[:HAS_TRACKER]->(t:Tracker)
-→ reasons.append("same_tracker")
-
-# Still open?
-MATCH (i:Issue {id: $id})-[:HAS_STATUS]->(s:Status)
-WHERE NOT s.is_closed
-→ reasons.append("still_open")
-```
+**Step 2 — Structural validation**: For each high-similarity candidate, the graph checks three structural signals — whether the candidate is in the **same project**, has the **same tracker type** (Bug, Feature, etc.), and is **still open**.
 
 **Step 3 — Confidence scoring**: An issue is flagged as a likely duplicate only when semantic similarity ≥ 88% AND at least 2 structural signals match.
 
@@ -254,7 +227,7 @@ This eliminates a common false positive in pure vector search: two issues from c
 
 ## How the LLM gets the combined context
 
-The `/api/analyze` endpoint assembles everything into a single prompt:
+At analysis time, the system assembles both retrieval paths into a single prompt:
 
 ```
 ## Current Issue
@@ -286,22 +259,9 @@ The LLM sees both retrieval paths clearly separated. The "Semantic Search" secti
 
 ## Graceful degradation
 
-Every API route follows the same pattern: if Neo4j is unavailable, the system still works — it just loses the graph enrichment layer.
+A deliberate architectural decision: if Neo4j is unavailable, the system still works — it just loses the graph enrichment layer. On initialization, the system attempts a Neo4j connection exactly once. If it fails, the graph layer is marked as unavailable and all subsequent queries fall back to vector-only retrieval without retrying.
 
-```python
-def _get_graph():
-    global _graph
-    if _graph is None:
-        try:
-            from src.graphdb.neo4j_store import Neo4jStore
-            _graph = Neo4jStore()
-        except Exception as e:
-            logger.warning(f"Neo4j not available: {e}")
-            _graph = False  # Mark as unavailable, don't retry
-    return _graph if _graph is not False else None
-```
-
-This was a deliberate decision. The vector search path should never break because the graph database is down. The graph is an enrichment layer, not a dependency. In practice, Neo4j has been stable, but the architecture means a graph outage degrades quality rather than causing failures.
+This means the vector search path never breaks because the graph database is down. The graph is an enrichment layer, not a dependency. In practice, Neo4j has been stable, but the architecture means a graph outage degrades answer quality rather than causing failures.
 
 ---
 

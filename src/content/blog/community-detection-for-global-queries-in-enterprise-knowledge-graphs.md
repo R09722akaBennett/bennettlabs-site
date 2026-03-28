@@ -141,67 +141,61 @@ Leiden improves on Louvain by adding a **refinement phase** that prevents the "i
 **Phase 1 — Local move.** Each node starts in its own community. For every node, the algorithm checks whether moving it to a neighbor's community would improve **modularity** — a metric that measures how dense the connections are within communities compared to random chance. Nodes greedily move to the community that gives the biggest modularity gain.
 
 ```
-Initial state:        After local moves:
+Initial state:             After local moves:
 
-  A ─── B               ┌─────────┐
-  │     │               │ A ─── B │  community 1
-  C     D ─── E         │ │       │
-        │               │ C       │
-        F ─── G         └─────────┘
-                         ┌─────────┐
-                         │ D ─── E │  community 2
-                         │ │       │
-                         │ F ─── G │
-                         └─────────┘
+  A ─── B                  ┌─────────┐
+  │     │                  │ A ─── B │  community 1
+  C     D ─── E            │ │       │
+        │                  │ C       │
+        F ─── G            └─────────┘
+                           ┌─────────┐
+                           │ D ─── E │  community 2
+                           │ │       │
+                           │ F ─── G │
+                           └─────────┘
 ```
 
 **Phase 2 — Refinement (Leiden only).** This is what separates Leiden from Louvain. After the local move phase, Leiden checks each community: are all nodes still well-connected internally? If a community has a weakly-attached node, it gets reassigned. This guarantees every community is **internally connected** — a property Louvain cannot guarantee.
 
 ```
-Louvain might produce:       Leiden refines to:
+Louvain might produce:        Leiden refines to:
 
-  ┌───────────────┐          ┌─────────┐  ┌─────┐
-  │ A ─── B     X │          │ A ─── B │  │  X  │
-  │ │         ╱   │    →     │ │       │  └─────┘
-  │ C       Y     │          │ C       │  ┌─────┐
-  │             ╲ │          └─────────┘  │ Y   │
-  │           Z   │                       │   ╲ │
-  └───────────────┘                       │ Z   │
-                                          └─────┘
-  X, Y, Z are weakly           X, Y, Z split into
-  connected to A-B-C           their own communities
+  ┌────────────────┐          ┌─────────┐
+  │ A ─── B     X  │          │ A ─── B │  ┌─────┐
+  │ │           │  │    →     │ │       │  │  X  │
+  │ C       Y   │  │          │ C       │  └─────┘
+  │         │   │  │          └─────────┘
+  │         Z   │  │                       ┌─────┐
+  └────────────────┘                       │ Y─Z │
+                                           └─────┘
+  X, Y, Z are weakly            X, Y, Z split into
+  connected to A-B-C            their own communities
 ```
 
 **Phase 3 — Aggregation.** Each community is collapsed into a single "super-node," and edges between communities become weighted edges between super-nodes. The algorithm then repeats Phase 1–2 on this coarser graph.
 
 ```
-Level 0 (original):     Level 1 (aggregated):    Level 2:
+Level 0 (original):       Level 1 (aggregated):     Level 2:
 
-  ┌───┐     ┌───┐
-  │ A │     │ D │         C1 ═══════ C2            S1
-  │ B │─────│ E │          (3)    (4)              (7)
-  │ C │     │ F │
-  └───┘     │ G │
-            └───┘
-  community  community
-     C1         C2
+  ┌─────┐   ┌─────┐
+  │  A  │   │  D  │        ┌────┐       ┌────┐      ┌────┐
+  │  B  │───│  E  │        │ C1 │═══════│ C2 │      │ S1 │
+  │  C  │   │  F  │        │(3) │       │(4) │      │(7) │
+  └─────┘   │  G  │        └────┘       └────┘      └────┘
+            └─────┘
 ```
 
 This hierarchical process repeats until modularity stops improving, producing a **dendrogram** of communities at multiple resolutions. In our case, `maxLevels: 4` allows up to 4 levels of nesting — so you can query at the product-line level (coarse) or at the feature-team level (fine-grained).
 
 **The modularity formula** behind each move decision:
 
-```
-Q = (1/2m) × Σ [A_ij - (k_i × k_j / 2m)] × δ(c_i, c_j)
+$$
+Q = \frac{1}{2m} \sum_{ij} \left[ A_{ij} - \gamma \frac{k_i \, k_j}{2m} \right] \delta(c_i, c_j)
+$$
 
-where:
-  A_ij  = edge weight between nodes i and j
-  k_i   = total edge weight of node i (degree)
-  m     = total edge weight in the graph
-  δ     = 1 if nodes i, j are in the same community, 0 otherwise
-```
+where $A_{ij}$ is the edge weight between nodes $i$ and $j$, $k_i$ is the total edge weight (degree) of node $i$, $m$ is the total edge weight in the graph, and $\delta(c_i, c_j) = 1$ if nodes $i, j$ are in the same community.
 
-The `gamma` parameter (set to `1.0` in our config) scales the `k_i × k_j / 2m` term. Higher gamma makes the algorithm prefer smaller communities; lower gamma favors larger ones. At `1.0`, the algorithm uses standard modularity — which for our 19K-issue graph produced 162 communities that naturally aligned with product lines.
+The $\gamma$ parameter (set to `1.0` in our config) scales the expected-edge term $\frac{k_i k_j}{2m}$. Higher $\gamma$ makes the algorithm prefer smaller communities; lower $\gamma$ favors larger ones. At `1.0`, the algorithm uses standard modularity — which for our 19K-issue graph produced 162 communities that naturally aligned with product lines.
 
 ### Setting up GDS
 
@@ -338,27 +332,29 @@ The final output is a global analysis that spans product lines — something no 
 ### Architecture
 
 ```
-User query
-    │
-    ▼
-┌────────────────────────────────────────────┐
-│         Map (162 communities, parallel)     │
-│  ┌──────┐ ┌──────┐ ┌──────┐               │
-│  │  DS  │ │  PDF │ │  SDK │  ... ×162      │
-│  │ sum. │ │ sum. │ │ sum. │               │
-│  │→ans. │ │→ans. │ │→ans. │               │
-│  │  72  │ │  31  │ │  85  │               │
-│  └──────┘ └──────┘ └──────┘               │
-└────────────────────┬───────────────────────┘
-                     │ Top 5
-                     ▼
-┌────────────────────────────────────────────┐
-│       Reduce (fuse top-scoring answers)    │
-│  SDK(85) + DS(72) + ... → global answer   │
-└────────────────────────────────────────────┘
-                     │
-                     ▼
-              Final answer
+                    User query
+                        │
+                        ▼
+┌───────────────────────────────────────────────┐
+│          Map (162 communities, parallel)       │
+│                                               │
+│   ┌──────┐   ┌──────┐   ┌──────┐             │
+│   │  DS  │   │  PDF │   │  SDK │   ... ×162   │
+│   │ sum. │   │ sum. │   │ sum. │             │
+│   │→ans. │   │→ans. │   │→ans. │             │
+│   │  72  │   │  31  │   │  85  │             │
+│   └──────┘   └──────┘   └──────┘             │
+│                                               │
+└───────────────────────┬───────────────────────┘
+                        │ Top 5
+                        ▼
+┌───────────────────────────────────────────────┐
+│        Reduce (fuse top-scoring answers)      │
+│   SDK(85) + DS(72) + ... → global answer      │
+└───────────────────────┬───────────────────────┘
+                        │
+                        ▼
+                  Final answer
 ```
 
 ---
@@ -366,38 +362,39 @@ User query
 ## The full pipeline
 
 ```
-┌─────────────────┐
-│  Redmine API    │
-└────────┬────────┘
+┌──────────────────┐
+│   Redmine API    │
+└────────┬─────────┘
+         │
          ▼
-┌─────────────────┐     ┌──────────────────┐
-│  graph-sync     │────▶│  Neo4j KG        │
-│  (sync data)    │     │  19K nodes       │
-└─────────────────┘     │  136K relations  │
-         │              └────────┬─────────┘
-         │                       ▼
-         │              ┌──────────────────┐
-         │              │rebuild-similarity│
-         │              │ (build sim edges)│
-         │              │ ~5M edges        │
-         │              └────────┬─────────┘
-         │                       ▼
-         │              ┌──────────────────┐
-         │              │community-detect  │
-         │              │ (Leiden algo)    │
-         │              │ → 162 communities│
-         │              └────────┬─────────┘
-         │                       ▼
-         │              ┌──────────────────┐
-         │              │community-summarize│
-         │              │ (LLM summaries)  │
-         │              └────────┬─────────┘
-         │                       ▼
-         │              ┌──────────────────┐
-         └─────────────▶│  API Server      │
-                        │ /global-query    │
-                        │ (Map-Reduce)     │
-                        └──────────────────┘
+┌──────────────────┐      ┌────────────────────┐
+│   graph-sync     │─────▶│   Neo4j KG         │
+│   (sync data)    │      │   19K nodes        │
+└──────────────────┘      │   136K relations   │
+                          └─────────┬──────────┘
+                                    ▼
+                          ┌────────────────────┐
+                          │ rebuild-similarity  │
+                          │ (build sim edges)   │
+                          │ ~5M edges           │
+                          └─────────┬──────────┘
+                                    ▼
+                          ┌────────────────────┐
+                          │ community-detect    │
+                          │ (Leiden algo)       │
+                          │ → 162 communities   │
+                          └─────────┬──────────┘
+                                    ▼
+                          ┌────────────────────┐
+                          │ community-summarize │
+                          │ (LLM summaries)     │
+                          └─────────┬──────────┘
+                                    ▼
+                          ┌────────────────────┐
+                          │ API Server          │
+                          │ /global-query       │
+                          │ (Map-Reduce)        │
+                          └────────────────────┘
 ```
 
 The daily schedule only needs the first three steps (graph-sync → rebuild-similarity → community-detect). Summaries can be regenerated weekly or when data changes significantly.
