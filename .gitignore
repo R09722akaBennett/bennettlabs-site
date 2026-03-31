@@ -21,3 +21,13 @@ dist/
 
 # Env
 .env
+
+# Claude Code extraction (raw package files)
+claude-code-source/*/cli.js
+claude-code-source/*/cli.js.map
+claude-code-source/*/vendor/
+claude-code-source/*/bun.lock
+claude-code-source/*/LICENSE.md
+claude-code-source/*/README.md
+claude-code-source/*/package.json
+claude-code-source/*/sdk-tools.d.ts
