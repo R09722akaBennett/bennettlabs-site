@@ -31,3 +31,4 @@ claude-code-source/*/LICENSE.md
 claude-code-source/*/README.md
 claude-code-source/*/package.json
 claude-code-source/*/sdk-tools.d.ts
+claude-code-source-*.tar.gz
