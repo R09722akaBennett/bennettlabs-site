@@ -1,0 +1,509 @@
+---
+// CountdownTimer.astro
+// A self-contained, client-side countdown timer.
+// Supports two modes:
+//   1. "date"     – count down to a specific date/time.
+//   2. "duration" – count down a fixed duration (hh:mm:ss).
+// State (target time + mode) is persisted to localStorage so a page
+// refresh resumes the same countdown.
+
+export interface Props {
+  /** Optional heading shown above the timer. */
+  title?: string;
+}
+
+const { title = "倒數計時器" } = Astro.props;
+---
+
+<section class="countdown" aria-live="polite">
+  <h1 class="countdown__title">{title}</h1>
+
+  <!-- Mode switch -->
+  <div class="countdown__modes" role="tablist" aria-label="計時模式">
+    <button class="mode-btn is-active" data-mode="date" role="tab" aria-selected="true">
+      倒數到指定時間
+    </button>
+    <button class="mode-btn" data-mode="duration" role="tab" aria-selected="false">
+      倒數一段時間
+    </button>
+  </div>
+
+  <!-- Inputs: date mode -->
+  <div class="countdown__inputs" data-panel="date">
+    <label class="field">
+      <span class="field__label">目標日期與時間</span>
+      <input type="datetime-local" id="target-date" class="field__input" />
+    </label>
+  </div>
+
+  <!-- Inputs: duration mode -->
+  <div class="countdown__inputs is-hidden" data-panel="duration">
+    <div class="duration-grid">
+      <label class="field">
+        <span class="field__label">時</span>
+        <input type="number" id="dur-h" class="field__input" min="0" max="999" value="0" />
+      </label>
+      <label class="field">
+        <span class="field__label">分</span>
+        <input type="number" id="dur-m" class="field__input" min="0" max="59" value="5" />
+      </label>
+      <label class="field">
+        <span class="field__label">秒</span>
+        <input type="number" id="dur-s" class="field__input" min="0" max="59" value="0" />
+      </label>
+    </div>
+  </div>
+
+  <!-- Display -->
+  <div class="display" id="display" data-finished="false">
+    <div class="unit">
+      <span class="unit__value" id="days">00</span>
+      <span class="unit__label">天</span>
+    </div>
+    <div class="unit">
+      <span class="unit__value" id="hours">00</span>
+      <span class="unit__label">時</span>
+    </div>
+    <div class="unit">
+      <span class="unit__value" id="minutes">00</span>
+      <span class="unit__label">分</span>
+    </div>
+    <div class="unit">
+      <span class="unit__value" id="seconds">00</span>
+      <span class="unit__label">秒</span>
+    </div>
+  </div>
+
+  <p class="display__message" id="message"></p>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn btn--primary" id="start-btn">開始</button>
+    <button class="btn" id="pause-btn" disabled>暫停</button>
+    <button class="btn" id="reset-btn">重設</button>
+  </div>
+</section>
+
+<style>
+  .countdown {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-2: #334155;
+    --accent: #38bdf8;
+    --accent-2: #818cf8;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --danger: #f87171;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+    text-align: center;
+  }
+
+  .countdown__title {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    margin: 0 0 1.5rem;
+    letter-spacing: 0.02em;
+  }
+
+  .countdown__modes {
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    background: var(--card);
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+  }
+
+  .mode-btn {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .mode-btn.is-active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #0b1120;
+    font-weight: 600;
+  }
+
+  .countdown__inputs {
+    margin-bottom: 1.75rem;
+  }
+  .countdown__inputs.is-hidden {
+    display: none;
+  }
+
+  .field {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    text-align: left;
+  }
+  .field__label {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .field__input {
+    background: var(--card);
+    border: 1px solid var(--card-2);
+    color: var(--text);
+    border-radius: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    font-size: 1rem;
+    color-scheme: dark;
+  }
+  .field__input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .duration-grid {
+    display: inline-grid;
+    grid-template-columns: repeat(3, 5rem);
+    gap: 0.75rem;
+  }
+  .duration-grid .field__input {
+    width: 100%;
+    text-align: center;
+  }
+
+  .display {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .unit {
+    background: var(--card);
+    border-radius: 1rem;
+    padding: 1.25rem 0.5rem 1rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  .unit__value {
+    display: block;
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .unit__label {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .display[data-finished="true"] .unit__value {
+    background: var(--danger);
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: pulse 1s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    50% { opacity: 0.45; }
+  }
+
+  .display__message {
+    min-height: 1.5rem;
+    margin: 0.5rem 0 1.5rem;
+    color: var(--accent);
+    font-size: 1.05rem;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .btn {
+    border: 1px solid var(--card-2);
+    background: var(--card);
+    color: var(--text);
+    padding: 0.7rem 1.4rem;
+    border-radius: 0.7rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s, opacity 0.2s;
+  }
+  .btn:hover:not(:disabled) { background: var(--card-2); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn--primary {
+    border: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #0b1120;
+    font-weight: 600;
+  }
+
+  @media (max-width: 420px) {
+    .display { gap: 0.5rem; }
+    .unit { padding: 0.9rem 0.25rem 0.75rem; }
+  }
+</style>
+
+<script>
+  type Mode = "date" | "duration";
+
+  const STORAGE_KEY = "countdown-timer-state";
+
+  const els = {
+    modeBtns: Array.from(document.querySelectorAll<HTMLButtonElement>(".mode-btn")),
+    panels: Array.from(document.querySelectorAll<HTMLElement>("[data-panel]")),
+    targetDate: document.getElementById("target-date") as HTMLInputElement,
+    durH: document.getElementById("dur-h") as HTMLInputElement,
+    durM: document.getElementById("dur-m") as HTMLInputElement,
+    durS: document.getElementById("dur-s") as HTMLInputElement,
+    display: document.getElementById("display") as HTMLElement,
+    days: document.getElementById("days") as HTMLElement,
+    hours: document.getElementById("hours") as HTMLElement,
+    minutes: document.getElementById("minutes") as HTMLElement,
+    seconds: document.getElementById("seconds") as HTMLElement,
+    message: document.getElementById("message") as HTMLElement,
+    startBtn: document.getElementById("start-btn") as HTMLButtonElement,
+    pauseBtn: document.getElementById("pause-btn") as HTMLButtonElement,
+    resetBtn: document.getElementById("reset-btn") as HTMLButtonElement,
+  };
+
+  let mode: Mode = "date";
+  let targetTs = 0; // epoch ms we are counting down to
+  let remainingOnPause = 0; // ms left when paused (duration mode)
+  let running = false;
+  let rafId = 0;
+  let intervalId = 0;
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  function setMode(next: Mode) {
+    mode = next;
+    els.modeBtns.forEach((b) => {
+      const active = b.dataset.mode === next;
+      b.classList.toggle("is-active", active);
+      b.setAttribute("aria-selected", String(active));
+    });
+    els.panels.forEach((p) => {
+      p.classList.toggle("is-hidden", p.dataset.panel !== next);
+    });
+  }
+
+  function render(msLeft: number) {
+    const clamped = Math.max(0, msLeft);
+    const totalSeconds = Math.floor(clamped / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    els.days.textContent = pad(days);
+    els.hours.textContent = pad(hours);
+    els.minutes.textContent = pad(minutes);
+    els.seconds.textContent = pad(seconds);
+  }
+
+  function beep() {
+    try {
+      const Ctx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
+      const ctx = new Ctx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.6);
+    } catch {
+      /* audio not available – ignore */
+    }
+  }
+
+  function finish() {
+    stopLoop();
+    running = false;
+    render(0);
+    els.display.dataset.finished = "true";
+    els.message.textContent = "時間到！⏰";
+    els.startBtn.disabled = false;
+    els.startBtn.textContent = "重新開始";
+    els.pauseBtn.disabled = true;
+    clearStorage();
+    beep();
+  }
+
+  function tick() {
+    const msLeft = targetTs - Date.now();
+    if (msLeft <= 0) {
+      finish();
+      return;
+    }
+    render(msLeft);
+  }
+
+  function startLoop() {
+    stopLoop();
+    tick();
+    // Update every 250ms for smooth seconds without busy-looping.
+    intervalId = window.setInterval(tick, 250);
+  }
+
+  function stopLoop() {
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = 0;
+    }
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = 0;
+    }
+  }
+
+  function durationMs(): number {
+    const h = Math.max(0, Number(els.durH.value) || 0);
+    const m = Math.max(0, Number(els.durM.value) || 0);
+    const s = Math.max(0, Number(els.durS.value) || 0);
+    return (h * 3600 + m * 60 + s) * 1000;
+  }
+
+  function start() {
+    els.display.dataset.finished = "false";
+    els.message.textContent = "";
+
+    let msLeft: number;
+    if (remainingOnPause > 0) {
+      // Resume from pause.
+      msLeft = remainingOnPause;
+      remainingOnPause = 0;
+    } else if (mode === "date") {
+      if (!els.targetDate.value) {
+        els.message.textContent = "請先選擇一個未來的時間。";
+        return;
+      }
+      targetTs = new Date(els.targetDate.value).getTime();
+      msLeft = targetTs - Date.now();
+      if (msLeft <= 0) {
+        els.message.textContent = "請選擇一個未來的時間。";
+        return;
+      }
+    } else {
+      msLeft = durationMs();
+      if (msLeft <= 0) {
+        els.message.textContent = "請輸入大於 0 的時間。";
+        return;
+      }
+    }
+
+    targetTs = Date.now() + msLeft;
+    running = true;
+    els.startBtn.disabled = true;
+    els.startBtn.textContent = "開始";
+    els.pauseBtn.disabled = false;
+    saveStorage();
+    startLoop();
+  }
+
+  function pause() {
+    if (!running) return;
+    running = false;
+    remainingOnPause = Math.max(0, targetTs - Date.now());
+    stopLoop();
+    els.startBtn.disabled = false;
+    els.startBtn.textContent = "繼續";
+    els.pauseBtn.disabled = true;
+    els.message.textContent = "已暫停";
+    clearStorage();
+  }
+
+  function reset() {
+    stopLoop();
+    running = false;
+    remainingOnPause = 0;
+    targetTs = 0;
+    render(0);
+    els.display.dataset.finished = "false";
+    els.message.textContent = "";
+    els.startBtn.disabled = false;
+    els.startBtn.textContent = "開始";
+    els.pauseBtn.disabled = true;
+    clearStorage();
+  }
+
+  // --- Persistence (only for a running countdown) ---
+  function saveStorage() {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ mode, targetTs })
+      );
+    } catch {
+      /* ignore */
+    }
+  }
+  function clearStorage() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+  function restoreStorage() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw) as { mode: Mode; targetTs: number };
+      if (data.targetTs && data.targetTs > Date.now()) {
+        setMode(data.mode);
+        targetTs = data.targetTs;
+        running = true;
+        els.startBtn.disabled = true;
+        els.pauseBtn.disabled = false;
+        startLoop();
+      } else {
+        clearStorage();
+      }
+    } catch {
+      clearStorage();
+    }
+  }
+
+  // --- Wire up events ---
+  els.modeBtns.forEach((b) =>
+    b.addEventListener("click", () => {
+      if (running) return; // don't switch mode mid-countdown
+      setMode(b.dataset.mode as Mode);
+    })
+  );
+  els.startBtn.addEventListener("click", start);
+  els.pauseBtn.addEventListener("click", pause);
+  els.resetBtn.addEventListener("click", reset);
+
+  // Sensible default target: 10 minutes from now.
+  if (!els.targetDate.value) {
+    const d = new Date(Date.now() + 10 * 60 * 1000);
+    d.setSeconds(0, 0);
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    els.targetDate.value = new Date(d.getTime() - tzOffset)
+      .toISOString()
+      .slice(0, 16);
+  }
+
+  render(0);
+  restoreStorage();
+</script>
